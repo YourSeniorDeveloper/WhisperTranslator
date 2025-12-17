@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  translator:
+    build: .
+    container_name: whisper_tts_translator
+    volumes:
+      # Mapeia a pasta local para dentro do container
+      - .:/app
+      # Persiste os modelos baixados (para não baixar 5GB toda vez que reiniciar)
+      - ./cache_huggingface:/root/.cache/huggingface
+      - ./cache_tts:/root/.local/share/tts
+    environment:
+      # Aceita termos de uso do Coqui (Necessário para o modelo XTTS)
+      - COQUI_TOS_AGREED=1
+    
+    # --- CONFIGURAÇÃO DE GPU (Opcional) ---
+    # Descomente as linhas abaixo se tiver placa NVIDIA e Docker Toolkit instalado
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]

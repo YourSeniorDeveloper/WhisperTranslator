@@ -1,0 +1,4 @@
+faster-whisper
+tts
+torch
+torchaudio
