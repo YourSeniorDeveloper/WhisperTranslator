@@ -1,6 +1,43 @@
 import os
 import subprocess
 import torch
+
+# Fix para problema de compatibilidade do BeamSearchScorer com transformers
+# Aplica o patch ANTES de importar qualquer módulo do TTS
+import sys
+import importlib
+
+def patch_transformers():
+    """Aplica patch para BeamSearchScorer antes do TTS ser importado"""
+    import transformers
+    
+    # Tenta diferentes locais onde BeamSearchScorer pode estar
+    if not hasattr(transformers, 'BeamSearchScorer'):
+        try:
+            from transformers.generation import BeamSearchScorer
+            transformers.BeamSearchScorer = BeamSearchScorer
+            setattr(transformers, 'BeamSearchScorer', BeamSearchScorer)
+        except ImportError:
+            try:
+                from transformers.generation.beam_search import BeamSearchScorer
+                transformers.BeamSearchScorer = BeamSearchScorer
+                setattr(transformers, 'BeamSearchScorer', BeamSearchScorer)
+            except ImportError:
+                # Cria stub se necessário (XTTS pode não usar diretamente)
+                class BeamSearchScorer:
+                    def __init__(self, *args, **kwargs):
+                        pass
+                transformers.BeamSearchScorer = BeamSearchScorer
+                setattr(transformers, 'BeamSearchScorer', BeamSearchScorer)
+    
+    # Também adiciona ao __all__ se existir
+    if hasattr(transformers, '__all__'):
+        if 'BeamSearchScorer' not in transformers.__all__:
+            transformers.__all__.append('BeamSearchScorer')
+
+# Aplica o patch imediatamente
+patch_transformers()
+
 from faster_whisper import WhisperModel
 from TTS.api import TTS
 

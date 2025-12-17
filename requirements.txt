@@ -1,4 +1,5 @@
 faster-whisper
-tts>=0.22.0
+tts==0.20.0
 torch
 torchaudio
+transformers==4.30.0
